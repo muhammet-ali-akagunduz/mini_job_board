@@ -2,8 +2,8 @@ function JobDetailsPanel({ selectedJob }) {
   return (
     <section className="panel details-panel">
       <div className="detail-toolbar">
-        <button type="button" className="icon-button" aria-label="Share">
-          ↗
+        <button type="button" className="icon-button" aria-label="Share job">
+          Share
         </button>
         <button type="button" className="icon-button" aria-label="More options">
           ...
@@ -15,7 +15,7 @@ function JobDetailsPanel({ selectedJob }) {
           <p className="eyebrow">{selectedJob.company}</p>
           <h2>{selectedJob.title}</h2>
           <p className="helper-text detail-meta">
-            {selectedJob.location} • {selectedJob.postedAgo} • {selectedJob.applicants}{' '}
+            {selectedJob.location} - {selectedJob.postedAgo} - {selectedJob.applicants}{' '}
             applicants
           </p>
         </div>
@@ -33,6 +33,26 @@ function JobDetailsPanel({ selectedJob }) {
       <div className="tag-row detail-pills">
         <span className="detail-pill">{selectedJob.workplaceType}</span>
         <span className="detail-pill">{selectedJob.employmentType}</span>
+        {selectedJob.easyApply ? <span className="detail-pill">Easy Apply</span> : null}
+      </div>
+
+      <div className="detail-metrics">
+        <article className="detail-metric">
+          <span className="detail-metric-label">Salary</span>
+          <strong className="detail-metric-value">{selectedJob.salary}</strong>
+        </article>
+        <article className="detail-metric">
+          <span className="detail-metric-label">Type</span>
+          <strong className="detail-metric-value">{selectedJob.employmentType}</strong>
+        </article>
+        <article className="detail-metric">
+          <span className="detail-metric-label">Workplace</span>
+          <strong className="detail-metric-value">{selectedJob.workplaceType}</strong>
+        </article>
+        <article className="detail-metric">
+          <span className="detail-metric-label">Applicants</span>
+          <strong className="detail-metric-value">{selectedJob.applicants}</strong>
+        </article>
       </div>
 
       <div className="cta-row">
@@ -68,22 +88,23 @@ function JobDetailsPanel({ selectedJob }) {
       </article>
 
       <article className="info-card">
-        <p className="eyebrow">Overview</p>
-        <ul className="plain-list">
-          <li>Salary: {selectedJob.salary}</li>
-          <li>Type: {selectedJob.employmentType}</li>
-          <li>Workplace: {selectedJob.workplaceType}</li>
-          <li>Applicants: {selectedJob.applicants}</li>
-        </ul>
-      </article>
-
-      <article className="info-card">
         <p className="eyebrow">Responsibilities</p>
         <ul className="plain-list">
           {selectedJob.responsibilities.map((item) => (
             <li key={item}>{item}</li>
           ))}
         </ul>
+      </article>
+
+      <article className="info-card">
+        <p className="eyebrow">Skills highlighted</p>
+        <div className="tag-row">
+          {selectedJob.tags.map((tag) => (
+            <span key={tag} className="tag">
+              {tag}
+            </span>
+          ))}
+        </div>
       </article>
     </section>
   )

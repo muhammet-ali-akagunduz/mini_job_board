@@ -15,19 +15,24 @@ function JobsPage() {
 
   const searchVal = searchParams.get('search') || ''
   const locationVal = searchParams.get('location') || ''
+  const querySummary = [searchVal, locationVal].filter(Boolean).join(' | ')
+  const activeSummary = querySummary || 'Browsing all available roles'
 
   useEffect(() => {
     const fetchJobs = async () => {
       setLoading(true)
       setError('')
+
       try {
         const liveJobs = await api.jobs.getAll(searchVal, locationVal, activeFilter)
         setJobs(liveJobs)
+
         if (liveJobs.length > 0) {
           setSelectedJob((prev) => {
-            if (prev && liveJobs.some((j) => j.id === prev.id)) {
-              return liveJobs.find((j) => j.id === prev.id)
+            if (prev && liveJobs.some((job) => job.id === prev.id)) {
+              return liveJobs.find((job) => job.id === prev.id)
             }
+
             return liveJobs[0]
           })
         } else {
@@ -39,18 +44,19 @@ function JobsPage() {
         setLoading(false)
       }
     }
+
     fetchJobs()
   }, [searchVal, locationVal, activeFilter])
 
   const handleSelectJob = (id) => {
-    const found = jobs.find((j) => j.id === id)
+    const found = jobs.find((job) => job.id === id)
     if (found) setSelectedJob(found)
   }
 
   const handleApplySuccess = (jobId) => {
     setJobs((prevJobs) =>
-      prevJobs.map((j) =>
-        j.id === jobId ? { ...j, applicants: j.applicants + 1 } : j
+      prevJobs.map((job) =>
+        job.id === jobId ? { ...job, applicants: job.applicants + 1 } : job
       )
     )
     setSelectedJob((prev) =>
@@ -59,39 +65,75 @@ function JobsPage() {
   }
 
   const handleDeleteSuccess = (jobId) => {
-    const remaining = jobs.filter((j) => j.id !== jobId)
+    const remaining = jobs.filter((job) => job.id !== jobId)
     setJobs(remaining)
     setSelectedJob(remaining.length > 0 ? remaining[0] : null)
   }
 
+  const statusContent =
+    loading && jobs.length === 0 ? (
+      <div className="page-status-message">Loading jobs feed...</div>
+    ) : error ? (
+      <div className="page-status-message error">{error}</div>
+    ) : null
+
   return (
-    <main className="content-grid jobs-page-grid">
-      {loading && jobs.length === 0 ? (
-        <div style={{ padding: '24px', color: '#9baec6' }}>Loading jobs feed...</div>
-      ) : error ? (
-        <div style={{ padding: '24px', color: '#ff6b6b' }}>⚠️ {error}</div>
+    <main className="jobs-page-shell">
+      <section className="jobs-hero panel">
+        <div className="jobs-hero-copy">
+          <p className="eyebrow">Jobs feed</p>
+          <h2>Discover roles that fit your next step</h2>
+          <p className="helper-text">
+            Use the search bar above to narrow the feed, then open a listing to review
+            details, applicants, and job context.
+          </p>
+          <p className="jobs-query-summary">{activeSummary}</p>
+        </div>
+
+        <div className="jobs-hero-stats" aria-label="Job feed summary">
+          <div className="stat-card">
+            <span className="stat-label">Results</span>
+            <strong>{jobs.length}</strong>
+          </div>
+          <div className="stat-card">
+            <span className="stat-label">Filter</span>
+            <strong>{activeFilter}</strong>
+          </div>
+          <div className="stat-card">
+            <span className="stat-label">Scope</span>
+            <strong>{locationVal ? 'Location based' : 'Remote friendly'}</strong>
+          </div>
+        </div>
+      </section>
+
+      {statusContent ? (
+        statusContent
       ) : (
-        <>
+        <section className="content-grid jobs-page-grid">
           <JobsPanel
             activeFilter={activeFilter}
             filters={filters}
             onFilterChange={setActiveFilter}
             onSelectJob={handleSelectJob}
-            selectedJob={selectedJob || {}}
+            selectedJob={selectedJob}
             visibleJobs={jobs}
           />
           {selectedJob ? (
-            <JobDetailsPanel 
-              selectedJob={selectedJob} 
-              onApplySuccess={handleApplySuccess} 
+            <JobDetailsPanel
+              selectedJob={selectedJob}
+              onApplySuccess={handleApplySuccess}
               onDeleteSuccess={handleDeleteSuccess}
             />
           ) : (
-            <div style={{ padding: '40px', color: '#9baec6', textAlign: 'center' }}>
-              No jobs found matching your criteria.
+            <div className="empty-state-panel panel">
+              <h3>No jobs found</h3>
+              <p>
+                Try removing one of the search terms or switch the filter to see more
+                listings in the feed.
+              </p>
             </div>
           )}
-        </>
+        </section>
       )}
     </main>
   )
