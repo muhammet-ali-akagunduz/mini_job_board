@@ -307,3 +307,19 @@ h3,
 p {
   margin-top: 0;
 }
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(120, 143, 171, 0.1);
+  border-radius: 8px;
+  color: #788fab;
+  font-size: 1.1rem;
+  margin: 40px auto;
+  max-width: 400px;
+  backdrop-filter: blur(10px);
+}

@@ -15,6 +15,10 @@ function CandidateApplicationsPage() {
       navigate('/login')
       return
     }
+    if (user.role !== 'CANDIDATE') {
+      navigate('/jobs')
+      return
+    }
 
     const fetchApplications = async () => {
       setLoading(true)

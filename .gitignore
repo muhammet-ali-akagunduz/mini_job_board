@@ -1,5 +1,6 @@
 # Exclude frontend directory from tracking
-frontEnd/
+backend/
+README.md
 
 # Exclude other temporary or IDE files at root
 .vscode/

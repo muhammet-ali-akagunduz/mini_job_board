@@ -1,25 +1,24 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, useState } from 'react';
 import { api } from '../services/api';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
+  const [user, setUser] = useState(() => {
     const token = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
     if (token && savedUser) {
       try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
+        return JSON.parse(savedUser);
+      } catch {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
       }
     }
-    setLoading(false);
-  }, []);
+    return null;
+  });
+  const [loading] = useState(false);
 
   const login = async (email, password) => {
     const res = await api.auth.login(email, password);
@@ -44,8 +43,18 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  const customSetUser = (newVal) => {
+    if (newVal) {
+      localStorage.setItem('user', JSON.stringify(newVal));
+    } else {
+      localStorage.removeItem('user');
+    }
+    setUser(newVal);
+  };
+
   const val = {
     user,
+    setUser: customSetUser,
     loading,
     login,
     register,

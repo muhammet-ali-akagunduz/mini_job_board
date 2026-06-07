@@ -44,7 +44,7 @@ function ProfilePage() {
       if (introFormData.fullName !== user.fullName) {
         setUser({ ...user, fullName: introFormData.fullName });
       }
-    } catch (err) {
+    } catch {
       alert('Failed to update profile');
     }
   };
@@ -60,7 +60,7 @@ function ProfilePage() {
       setActiveModal(null);
       setFormData({});
       fetchProfile();
-    } catch (err) {
+    } catch {
       alert(`Failed to add ${activeModal}`);
     }
   };
@@ -73,13 +73,13 @@ function ProfilePage() {
       if (type === 'certification') await api.profile.deleteCertification(id);
       if (type === 'skill') await api.profile.deleteSkill(id);
       fetchProfile();
-    } catch (err) {
+    } catch {
       alert('Failed to delete item');
     }
   };
 
-  if (loading) return <div>Loading profile...</div>;
-  if (!profile) return <div>Error loading profile.</div>;
+  if (loading) return <div className="loading-container">Loading profile...</div>;
+  if (!profile) return <div className="loading-container">Error loading profile.</div>;
 
   return (
     <div className="profile-container">
@@ -209,6 +209,39 @@ function ProfilePage() {
         </div>
       </div>
 
+      {/* Certifications Section */}
+      <div className="profile-card">
+        <div className="profile-card-header">
+          <h2>Certifications</h2>
+          <button className="secondary-button" onClick={() => setActiveModal('certification')}>+ Add</button>
+        </div>
+        <div className="profile-card-content">
+          {profile.certifications?.length > 0 ? (
+            profile.certifications.map(cert => (
+              <div key={cert.id} className="profile-list-item">
+                <div className="profile-item-logo">📜</div>
+                <div className="profile-item-content" style={{ flex: 1 }}>
+                  <h4>{cert.name}</h4>
+                  <p>{cert.issuingOrganization}</p>
+                  <p className="profile-item-meta">Issued {cert.issueDate}</p>
+                  {cert.credentialId && <p className="profile-item-meta" style={{ fontSize: '12px' }}>Credential ID: {cert.credentialId}</p>}
+                  {cert.credentialUrl && (
+                    <a href={cert.credentialUrl} target="_blank" rel="noopener noreferrer" className="profile-item-desc" style={{ color: '#76b4ff', textDecoration: 'none', display: 'inline-block', marginTop: '4px' }}>
+                      🔗 View credential
+                    </a>
+                  )}
+                </div>
+                <button className="secondary-button" style={{ padding: '4px 8px', height: 'fit-content' }} onClick={() => handleDelete('certification', cert.id)}>🗑️</button>
+              </div>
+            ))
+          ) : (
+            <div className="empty-state">
+              <p>Add your professional certifications and licenses.</p>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Skills Section */}
       <div className="profile-card">
         <div className="profile-card-header">
@@ -302,6 +335,31 @@ function ProfilePage() {
                     <div className="form-group">
                       <label>Activities and societies</label>
                       <textarea className="form-textarea" rows="3" value={formData.activities || ''} onChange={e => setFormData({...formData, activities: e.target.value})}></textarea>
+                    </div>
+                  </>
+                )}
+
+                {activeModal === 'certification' && (
+                  <>
+                    <div className="form-group">
+                      <label>Certification Name</label>
+                      <input className="form-input" type="text" required value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} />
+                    </div>
+                    <div className="form-group">
+                      <label>Issuing Organization</label>
+                      <input className="form-input" type="text" required value={formData.issuingOrganization || ''} onChange={e => setFormData({...formData, issuingOrganization: e.target.value})} />
+                    </div>
+                    <div className="form-group">
+                      <label>Issue Date (e.g. May 2023)</label>
+                      <input className="form-input" type="text" value={formData.issueDate || ''} onChange={e => setFormData({...formData, issueDate: e.target.value})} />
+                    </div>
+                    <div className="form-group">
+                      <label>Credential ID</label>
+                      <input className="form-input" type="text" value={formData.credentialId || ''} onChange={e => setFormData({...formData, credentialId: e.target.value})} />
+                    </div>
+                    <div className="form-group">
+                      <label>Credential URL</label>
+                      <input className="form-input" type="url" value={formData.credentialUrl || ''} onChange={e => setFormData({...formData, credentialUrl: e.target.value})} placeholder="https://example.com/verify" />
                     </div>
                   </>
                 )}

@@ -41,7 +41,7 @@ function SavedJobsPage() {
       await api.jobs.unsave(jobId)
       // Remove from list
       setJobs((prev) => prev.filter((j) => j.id !== jobId))
-    } catch (err) {
+    } catch {
       alert('Failed to remove from saved jobs.')
     }
   }

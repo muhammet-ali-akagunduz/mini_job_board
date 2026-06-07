@@ -1,9 +1,103 @@
-function JobDetailsPanel({ selectedJob }) {
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import { api } from '../services/api'
+
+function JobDetailsPanel({ selectedJob, onApplySuccess, onDeleteSuccess }) {
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const [statusMsg, setStatusMsg] = useState('')
+  const [errorMsg, setErrorMsg] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [isSaved, setIsSaved] = useState(selectedJob?.isSaved || false)
+  const [saveLoading, setSaveLoading] = useState(false)
+
+  useEffect(() => {
+    setIsSaved(selectedJob?.isSaved || false)
+  }, [selectedJob])
+
+  const handleApply = async () => {
+    if (!user) {
+      navigate('/login')
+      return
+    }
+
+    if (user.role !== 'CANDIDATE') {
+      setErrorMsg('Only candidates can apply to job openings!')
+      return
+    }
+
+    setLoading(true)
+    setErrorMsg('')
+    setStatusMsg('')
+
+    try {
+      await api.applications.apply(selectedJob.id)
+      setStatusMsg('✓ Applied successfully!')
+      if (onApplySuccess) {
+        onApplySuccess(selectedJob.id)
+      }
+    } catch (err) {
+      setErrorMsg(err.message || 'Application failed')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSaveToggle = async () => {
+    if (!user) {
+      navigate('/login')
+      return
+    }
+    
+    if (user.role !== 'CANDIDATE') {
+      setErrorMsg('Only candidates can save jobs!')
+      return
+    }
+
+    setSaveLoading(true)
+    setErrorMsg('')
+    setStatusMsg('')
+
+    try {
+      if (isSaved) {
+        await api.jobs.unsave(selectedJob.id)
+        setIsSaved(false)
+        setStatusMsg('Removed from saved jobs.')
+      } else {
+        await api.jobs.save(selectedJob.id)
+        setIsSaved(true)
+        setStatusMsg('✓ Job saved successfully!')
+      }
+    } catch (err) {
+      setErrorMsg(err.message || 'Failed to update saved status')
+    } finally {
+      setSaveLoading(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this job posting?")) return;
+    
+    setLoading(true)
+    setErrorMsg('')
+    
+    try {
+      await api.jobs.delete(selectedJob.id)
+      if (onDeleteSuccess) {
+        onDeleteSuccess(selectedJob.id)
+      }
+    } catch (err) {
+      setErrorMsg(err.message || 'Failed to delete job')
+      setLoading(false)
+    }
+  }
+
   return (
     <section className="panel details-panel">
       <div className="detail-toolbar">
-        <button type="button" className="icon-button" aria-label="Share job">
-          Share
+        <button type="button" className="icon-button" aria-label="Share">
+          ↗
         </button>
         <button type="button" className="icon-button" aria-label="More options">
           ...
@@ -15,7 +109,7 @@ function JobDetailsPanel({ selectedJob }) {
           <p className="eyebrow">{selectedJob.company}</p>
           <h2>{selectedJob.title}</h2>
           <p className="helper-text detail-meta">
-            {selectedJob.location} - {selectedJob.postedAgo} - {selectedJob.applicants}{' '}
+            {selectedJob.location} • {selectedJob.postedAgo} • {selectedJob.applicants}{' '}
             applicants
           </p>
         </div>
@@ -33,35 +127,59 @@ function JobDetailsPanel({ selectedJob }) {
       <div className="tag-row detail-pills">
         <span className="detail-pill">{selectedJob.workplaceType}</span>
         <span className="detail-pill">{selectedJob.employmentType}</span>
-        {selectedJob.easyApply ? <span className="detail-pill">Easy Apply</span> : null}
       </div>
 
-      <div className="detail-metrics">
-        <article className="detail-metric">
-          <span className="detail-metric-label">Salary</span>
-          <strong className="detail-metric-value">{selectedJob.salary}</strong>
-        </article>
-        <article className="detail-metric">
-          <span className="detail-metric-label">Type</span>
-          <strong className="detail-metric-value">{selectedJob.employmentType}</strong>
-        </article>
-        <article className="detail-metric">
-          <span className="detail-metric-label">Workplace</span>
-          <strong className="detail-metric-value">{selectedJob.workplaceType}</strong>
-        </article>
-        <article className="detail-metric">
-          <span className="detail-metric-label">Applicants</span>
-          <strong className="detail-metric-value">{selectedJob.applicants}</strong>
-        </article>
-      </div>
+      {statusMsg && (
+        <div style={{ color: '#51c28e', fontWeight: '600', margin: '12px 0' }}>
+          {statusMsg}
+        </div>
+      )}
+
+      {errorMsg && (
+        <div style={{ color: '#ff6b6b', fontWeight: '600', margin: '12px 0' }}>
+          ⚠️ {errorMsg}
+        </div>
+      )}
 
       <div className="cta-row">
-        <button className="primary-button" type="button">
-          Easy Apply
-        </button>
-        <button className="secondary-button" type="button">
-          Save job
-        </button>
+        {!selectedJob.isOwner ? (
+          <>
+            <button 
+              className="primary-button" 
+              type="button" 
+              onClick={handleApply}
+              disabled={loading}
+            >
+              {loading ? 'Applying...' : 'Easy Apply'}
+            </button>
+            <button 
+              className="secondary-button" 
+              type="button"
+              onClick={handleSaveToggle}
+              disabled={saveLoading}
+              style={{
+                background: isSaved ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                borderColor: isSaved ? '#fff' : 'rgba(120, 143, 171, 0.32)',
+                color: isSaved ? '#fff' : '#e7effb'
+              }}
+            >
+              {saveLoading ? '...' : isSaved ? 'Saved' : 'Save job'}
+            </button>
+          </>
+        ) : (
+          <button 
+            className="secondary-button" 
+            type="button"
+            onClick={handleDelete}
+            disabled={loading}
+            style={{
+              borderColor: '#ff6b6b',
+              color: '#ff6b6b'
+            }}
+          >
+            {loading ? 'Deleting...' : 'Delete Job'}
+          </button>
+        )}
       </div>
 
       <article className="info-card spotlight-card">
@@ -88,23 +206,24 @@ function JobDetailsPanel({ selectedJob }) {
       </article>
 
       <article className="info-card">
-        <p className="eyebrow">Responsibilities</p>
+        <p className="eyebrow">Overview</p>
         <ul className="plain-list">
-          {selectedJob.responsibilities.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
+          <li>Salary: {selectedJob.salary || 'Not specified'}</li>
+          <li>Type: {selectedJob.employmentType}</li>
+          <li>Workplace: {selectedJob.workplaceType}</li>
+          <li>Applicants: {selectedJob.applicants}</li>
         </ul>
       </article>
 
       <article className="info-card">
-        <p className="eyebrow">Skills highlighted</p>
-        <div className="tag-row">
-          {selectedJob.tags.map((tag) => (
-            <span key={tag} className="tag">
-              {tag}
-            </span>
-          ))}
-        </div>
+        <p className="eyebrow">Responsibilities</p>
+        <ul className="plain-list">
+          {selectedJob.responsibilities && selectedJob.responsibilities.length > 0 ? (
+            selectedJob.responsibilities.map((item) => <li key={item}>{item}</li>)
+          ) : (
+            <li>Collaborate with standard engineering teams and build clean solutions.</li>
+          )}
+        </ul>
       </article>
     </section>
   )

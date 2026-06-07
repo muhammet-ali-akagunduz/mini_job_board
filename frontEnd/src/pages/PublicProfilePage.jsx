@@ -9,22 +9,22 @@ function PublicProfilePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchProfile();
-  }, [id]);
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        const data = await api.users.getPublicProfile(id);
+        setProfile(data);
+      } catch (err) {
+        console.error('Failed to fetch public profile', err);
+        alert('Candidate profile not found or you do not have permission to view it.');
+        navigate(-1); // go back
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const fetchProfile = async () => {
-    try {
-      setLoading(true);
-      const data = await api.users.getPublicProfile(id);
-      setProfile(data);
-    } catch (err) {
-      console.error('Failed to fetch public profile', err);
-      alert('Candidate profile not found or you do not have permission to view it.');
-      navigate(-1); // go back
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchProfile();
+  }, [id, navigate]);
 
   if (loading) return <div style={{ padding: '24px', color: '#9baec6' }}>Loading profile...</div>;
   if (!profile) return <div style={{ padding: '24px', color: '#ff6b6b' }}>Error loading profile.</div>;

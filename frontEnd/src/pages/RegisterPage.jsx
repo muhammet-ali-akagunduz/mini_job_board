@@ -108,8 +108,8 @@ function RegisterPage() {
             disabled={loading}
             required
           >
-            <option value="CANDIDATE">Candidate (Aday)</option>
-            <option value="EMPLOYER">Employer (İşveren)</option>
+            <option value="CANDIDATE">Candidate</option>
+            <option value="EMPLOYER">Employer</option>
           </select>
           <button type="submit" className="primary-button full-width" disabled={loading}>
             {loading ? 'Registering...' : 'Register'}

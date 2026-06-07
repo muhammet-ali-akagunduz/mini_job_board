@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:8080';
+const BASE_URL = 'http://localhost:8081';
 
 const request = async (url, options = {}) => {
   const token = localStorage.getItem('token');
@@ -22,7 +22,7 @@ const request = async (url, options = {}) => {
     try {
       const errData = await response.json();
       errorMsg = errData.message || errorMsg;
-    } catch (e) {
+    } catch {
       // Ignored
     }
     throw new Error(errorMsg);

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react'
 import { NavLink, Outlet, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -95,7 +96,7 @@ function AppLayout() {
               <span className="nav-icon" aria-hidden="true">
                 🚪
               </span>
-              <span>Logout ({user.fullName.split(' ')[0]})</span>
+              <span>Logout ({user?.fullName ? user.fullName.split(' ' )[0] : 'User'})</span>
             </button>
           )}
         </nav>
