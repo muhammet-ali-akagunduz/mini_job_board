@@ -53,16 +53,50 @@ Before you begin, make sure you have the following installed:
 
 ### 🗄️ 0. Database Setup
 
-This project uses MySQL database. Before running the backend:
+This project uses MySQL database. Before running the backend, you must create a database named `minijobboard`:
+
+#### 🍎 macOS (Using Homebrew)
+1. Install MySQL (if not installed):
+   ```bash
+   brew install mysql
+   ```
+2. Start the MySQL service:
+   ```bash
+   brew services start mysql
+   ```
+3. Log in to MySQL:
+   ```bash
+   mysql -u root -p
+   ```
+4. Create the database:
+   ```sql
+   CREATE DATABASE minijobboard;
+   ```
+
+#### 🪟 Windows
+1. Download and install [MySQL Installer](https://dev.mysql.com/downloads/installer/).
+2. During setup, make sure to set the root password (recommended: `root` to match default properties).
+3. Open **MySQL 8.0 Command Line Client** from the Start Menu.
+4. Enter your root password.
+5. Create the database:
+   ```sql
+   CREATE DATABASE minijobboard;
+   ```
+*(Alternatively, you can open **MySQL Workbench** or any GUI tool and run the SQL query: `CREATE DATABASE minijobboard;`)*
+
+#### 🐧 Linux
 1. Log in to your local MySQL server:
    ```bash
    mysql -u root -p
    ```
-2. Create the database for the project:
+2. Create the database:
    ```sql
    CREATE DATABASE minijobboard;
    ```
-3. Make sure the credentials in `backend/src/main/resources/application-dev.properties` match your local MySQL configuration (default username/password is `root`/`root`).
+
+---
+
+Make sure the credentials in `backend/src/main/resources/application-dev.properties` match your local MySQL configuration (default username/password is `root`/`root`).
 
 ---
 
